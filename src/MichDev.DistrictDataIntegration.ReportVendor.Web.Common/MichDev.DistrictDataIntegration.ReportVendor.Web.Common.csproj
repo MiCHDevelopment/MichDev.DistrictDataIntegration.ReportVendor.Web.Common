@@ -22,9 +22,9 @@
     
     <PackageId>MichDev.DistrictDataIntegration.ReportVendor.Web.Common</PackageId>
     <Version>1.6.0</Version>
-    <Authors>OAISD</Authors>
+    <Authors>MiCHDevelopment</Authors>
     <Company>Ottawa Area ISD</Company>
-    <RepositoryUrl>https://github.com/OAISD/MichDev.DistrictDataIntegration.DDISFramework</RepositoryUrl>
+    <RepositoryUrl>https://github.com/MiCHDevelopment/MichDev.DistrictDataIntegration.ReportVendor.Web.Common</RepositoryUrl>
   </PropertyGroup>
   
   <PropertyGroup>
