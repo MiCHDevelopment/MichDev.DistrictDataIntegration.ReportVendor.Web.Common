@@ -1,5 +1,7 @@
 # MichDev.DistrictDataIntegration.ReportVendor.Web.Common
 
+**Latest Release:** 1.6.0
+
 ASP.NET Core framework for easily developing Report Vendor APIs or Clients.
 
 This library contains Endpoint constants and API contracts in order to provide a consistent standard upon which the Report Vendor API and consumers may agree.
