@@ -1,0 +1,25 @@
+<Project>
+
+  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    
+    <PackageId>MichDev.DistrictDataIntegration.ReportVendor.Web.Common</PackageId>
+    <Version>1.6.0-alpha1</Version>
+    <Authors>MiCHDevelopment</Authors>
+    <Company>Ottawa Area ISD</Company>
+    <RepositoryUrl>https://github.com/MiCHDevelopment/MichDev.DistrictDataIntegration.ReportVendor.Web.Common</RepositoryUrl>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Ignore documentation warnings -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

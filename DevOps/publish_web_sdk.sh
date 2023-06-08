@@ -30,7 +30,7 @@ if ! checkArgs;
 then exit
 fi
 
-dotnet pack src/MichDev.DistrictDataIntegration.ReportVendor.Web.Common --configuration Release
+dotnet pack src/MichDev.DistrictDataIntegration.ReportVendor.Web.Common/MichDev.DistrictDataIntegration.ReportVendor.Web.Common.csproj --configuration Release
 dotnet nuget push --source michdev src/MichDev.DistrictDataIntegration.ReportVendor.Web.Common/bin/Release/MichDev.DistrictDataIntegration.ReportVendor.Web.Common.${ARG_VERSION}.nupkg
 
 DEPENDENCIES="$(dotnet list src/MichDev.DistrictDataIntegration.ReportVendor.Web.Common package)"
