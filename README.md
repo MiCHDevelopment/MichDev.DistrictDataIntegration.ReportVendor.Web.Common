@@ -9,7 +9,7 @@ This library contains Endpoint constants and API contracts in order to provide a
 ## Installation
 
 ```bash
-$ dotnet add package MichDev.DistrictDataIntegration.ReportVendor.Web.Common --version {version}
+$ dotnet add package MichDev.DistrictDataIntegration.ReportVendor.Web.Common --version {version} --source ttps://nuget.pkg.github.com/MiCHDevelopment/index.json
 ```
 
 ## Library Architecture
