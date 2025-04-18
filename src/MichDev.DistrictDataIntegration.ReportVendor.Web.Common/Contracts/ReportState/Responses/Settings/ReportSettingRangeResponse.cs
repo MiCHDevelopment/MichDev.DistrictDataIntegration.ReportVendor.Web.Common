@@ -5,8 +5,8 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
 {
   public class ReportSettingNumberRangeResponse
   {
-    public int? Min { get; set; }
-    public int? Max { get; set; }
+    public double? Min { get; set; }
+    public double? Max { get; set; }
   }
 
   public class ReportSettingDateRangeResponse

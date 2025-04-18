@@ -1,5 +1,4 @@
-<Project>
-
+<Project Sdk="Microsoft.NET.Sdk">
   <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
     <ItemGroup>
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
@@ -8,14 +7,14 @@
 
   <PropertyGroup>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
-    
+
     <PackageId>MichDev.DistrictDataIntegration.ReportVendor.Web.Common</PackageId>
-    <Version>1.6.0-alpha2</Version>
+    <Version>1.7.0</Version>
     <Authors>MiCHDevelopment</Authors>
-    <Company>Ottawa Area ISD</Company>
+    <Company>MiCHDev</Company>
     <RepositoryUrl>https://github.com/MiCHDevelopment/MichDev.DistrictDataIntegration.ReportVendor.Web.Common</RepositoryUrl>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Ignore documentation warnings -->
