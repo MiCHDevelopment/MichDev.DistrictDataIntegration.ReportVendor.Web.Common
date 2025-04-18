@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 ARG_VERSION=$1
 ARG_DESCRIPTION=$2
