@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="NugetPackage.csproj" />
+  <Import Project="NugetPackage.props" />
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="[12.0.1,]" />

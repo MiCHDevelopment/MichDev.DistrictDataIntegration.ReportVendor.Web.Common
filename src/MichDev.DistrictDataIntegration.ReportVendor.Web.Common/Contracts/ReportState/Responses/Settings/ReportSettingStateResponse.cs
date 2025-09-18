@@ -33,8 +33,10 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
     /// <para>
     /// This property only applies to settings of the following types:
     /// <see cref="ReportSettingTypes.TypeSingleSelect" />,
-    /// <see cref="ReportSettingTypes.TypeNumberRange" />,
-    /// <see cref="ReportSettingTypes.TypeDateRange" />.
+    /// <see cref="ReportSettingTypes.TypeNumber" />,
+    /// <see cref="ReportSettingTypes.TypeNumber_Deprecated" />,
+    /// <see cref="ReportSettingTypes.TypeDate" />,
+    /// <see cref="ReportSettingTypes.TypeDate_Deprecated" />.
     /// If this setting has a different type, this property will be null.
     /// </para>
     /// </summary>
@@ -70,26 +72,40 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
     
     /// <summary>
     /// <para>
-    /// An object that represents the range of numbers that can be chosen for this setting.
+    /// An object that represents the range of numbers that can be chosen for this setting. Settings that
+    /// use this field still only represent a single value. The range here simply acts as a constraint around
+    /// what can be set in the <see cref="SelectedValue"/>.
     /// </para>
     /// <para>
     /// This property only applies to settings of with type
-    /// <see cref="ReportSettingTypes.TypeNumberRange" />.
+    /// <see cref="ReportSettingTypes.TypeNumber_Deprecated" />.
     /// If this setting has a different type, this property will be null.
     /// </para>
     /// </summary>
+    /// <remarks>
+    /// If the value itself is desired to specify a range, use 2 separate settings instead; one for min and
+    /// one for max. Each would specify the Range of accepted values and one would be constrained by the other
+    /// (e.g. max is constrained by min).
+    /// </remarks>
     public ReportSettingNumberRangeResponse? NumberRange { get; set; }
     
     /// <summary>
     /// <para>
-    /// An object that represents the range of dates that can be chosen for this setting.
+    /// An object that represents the range of dates that can be chosen for this setting. Settings that
+    /// use this field still only represent a single value. The range here simply acts as a constraint around
+    /// what can be set in the <see cref="SelectedValue"/>.
     /// </para>
     /// <para>
     /// This property only applies to settings of with type
-    /// <see cref="ReportSettingTypes.TypeDateRange" />.
+    /// <see cref="ReportSettingTypes.TypeDate_Deprecated" />.
     /// If this setting has a different type, this property will be null.
     /// </para>
     /// </summary>
+    /// <remarks>
+    /// If the value itself is desired to specify a range, use 2 separate settings instead; one for min and
+    /// one for max. Each would specify the Range of accepted values and one would be constrained by the other
+    /// (e.g. max is constrained by min).
+    /// </remarks>
     public ReportSettingDateRangeResponse? DateRange { get; set; }
   }
 }
