@@ -116,12 +116,14 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       {
         foreach (ReportSettingResponse settingResponse in stateResponse.Parameters.Settings)
         {
-          AssertForRequest(
+          AssertForSetting(
             stateRequest,
+            settingResponse,
             () => Assert.NotNull(settingResponse.ParameterId));
 
-          AssertForRequest(
+          AssertForSetting(
             stateRequest,
+            settingResponse,
             () => Assert.NotNull(settingResponse.Label));
         }
       }
@@ -166,18 +168,21 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
 
       foreach (ReportSettingResponse settingResponse in stateResponse.Parameters.Settings)
       {
-        AssertForRequest(
+        AssertForSetting(
           stateRequest,
+          settingResponse,
           () => Assert.NotNull(settingResponse.ParameterId));
-          
-        AssertForRequest(
+
+        AssertForSetting(
           stateRequest,
+          settingResponse,
           () => Assert.NotNull(settingResponse.Label));
       }
 
       ReportSettingResponse settingThatWasReset = stateWithParamSet!.Parameters.Settings.Single(param => param.ParameterId == settingToSet.ParameterId);
-      AssertForRequest(
+      AssertForSetting(
         stateRequest,
+        settingThatWasReset,
         () => Assert.Equal(optionToChoose.Value, settingThatWasReset.SelectedValue));
     }
 
@@ -192,7 +197,24 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       catch (Exception e)
       {
         string requestJson = JsonConvert.SerializeObject(request, Formatting.Indented);
-        throw new XunitException($"Assertion agains a report state failed.\nReport state request JSON:\n{request}", e);
+        throw new XunitException($"Assertion against a report state failed.\nReport state request JSON:\n{request}", e);
+      }
+    }
+
+    private void AssertForSetting(
+      ReportStateRequest request,
+      ReportSettingResponse setting,
+      Action assertion)
+    {
+      try
+      {
+        assertion.Invoke();
+      }
+      catch (Exception e)
+      {
+        string requestJson = JsonConvert.SerializeObject(request, Formatting.Indented);
+        string settingJson = JsonConvert.SerializeObject(setting, Formatting.Indented);
+        throw new XunitException($"Assertion against the '{setting.ParameterId}' setting failed.\nReport state request JSON:\n{requestJson}\nSetting JSON:\n{settingJson}", e);
       }
     }
   }
