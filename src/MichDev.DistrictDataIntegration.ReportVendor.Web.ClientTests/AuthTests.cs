@@ -38,7 +38,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       Assert.NotNull(tokenResponse);
 
       Assert.NotNull(tokenResponse.AccessToken);
-      Assert.NotEmpty(tokenResponse.AccessToken);
+      Assert.NotEqual(string.Empty, tokenResponse.AccessToken.Trim());
     }
 
     /// <summary>

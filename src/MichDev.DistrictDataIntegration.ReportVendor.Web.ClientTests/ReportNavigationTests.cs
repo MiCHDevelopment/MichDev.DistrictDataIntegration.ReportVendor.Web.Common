@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client;
@@ -20,6 +21,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     private static TokenResponse? token = null;
 
     private ReportApiConfigs reportConfigs = default!;
+    private ReportNavigationApi reportNavigationClient = default!;
 
     private async Task InitializeClient()
     {
@@ -29,55 +31,9 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       {
         client = new HttpClient();
         token = await this.reportConfigs.Auth.GetTokenResponse(client);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
+        this.reportNavigationClient = new ReportNavigationApi(client, this.reportConfigs);
       }
-    }
-
-    private string ReportNavigationUrl => this.reportConfigs.ReportApiUrlBase.TrimEnd('/') + ReportNavigationEndpoint.Endpoint;
-
-    private string GetReportNavigationUrl(
-      IEnumerable<string>? pathToCategory,
-      string? selectedNodeId)
-    {
-
-      string url = this.ReportNavigationUrl;
-
-      if ((pathToCategory?.Any() ?? false) || !string.IsNullOrWhiteSpace(selectedNodeId))
-      {
-        url += "?";
-      }
-
-      if (pathToCategory?.Any() ?? false)
-      {
-        string pathToCategoryString = string.Join(",", pathToCategory);
-        url += $"pathToCategory={pathToCategoryString}";
-      }
-
-      if ((pathToCategory?.Any() ?? false) && !string.IsNullOrWhiteSpace(selectedNodeId))
-      {
-        url += "&";
-      }
-
-      if (!string.IsNullOrWhiteSpace(selectedNodeId))
-      {
-        url += $"selectedNodeId={selectedNodeId}";
-      }
-
-      return url;
-    }
-
-    private async Task<CategoryResponse?> GetCategory(
-      IEnumerable<string>? pathToCategory = null,
-      string? selectedNodeId = null)
-    {
-      string url = this.GetReportNavigationUrl(pathToCategory, selectedNodeId);
-
-      HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-      HttpResponseMessage response = await client.SendAsync(request, TestContext.Current.CancellationToken);
-
-      string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-      CategoryResponse? rootCategory = JsonConvert.DeserializeObject<CategoryResponse>(responseContent);
-      return rootCategory;
     }
 
     /// <summary>
@@ -88,7 +44,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     public async Task Test_TheRootCategoryHasAnInternalIdAndSomethingForTheUserToSelect()
     {
       await InitializeClient();
-      CategoryResponse? rootCategory = await GetCategory();
+      CategoryResponse? rootCategory = await this.reportNavigationClient.GetCategory();
 
       Assert.NotNull(rootCategory);
       Assert.NotNull(rootCategory.InternalId);
@@ -111,11 +67,11 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task Test_IDontHitADeadEnd()
+    public async Task Test_TheNavigationTreeNodesAreValid_WhenIWalkTheTree()
     {
       await InitializeClient();
 
-      CategoryResponse? category = await GetCategory();
+      CategoryResponse? category = await this.reportNavigationClient.GetCategory();
 
       IEnumerable<ExpectationFailure> failures = [];
 
@@ -181,7 +137,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
             IEnumerable<string> pathToSubCategory = pathToCategory.Append(selectedNodeId);
             string selectedNodeIdForSubCategory = subCategoryOption.InternalId;
 
-            CategoryResponse? subCategory = await GetCategory(pathToSubCategory, selectedNodeIdForSubCategory);
+            CategoryResponse? subCategory = await this.reportNavigationClient.GetCategory(pathToSubCategory, selectedNodeIdForSubCategory);
 
             failures = failures.Concat(
               AssertExpectation(
@@ -285,7 +241,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
           selectedNodeId,
           failureMessage,
           e,
-          this.GetReportNavigationUrl);
+          this.reportNavigationClient.GetReportNavigationUrl);
         return [failure];
       }
     }
