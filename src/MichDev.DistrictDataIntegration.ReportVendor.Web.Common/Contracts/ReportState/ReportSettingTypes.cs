@@ -52,7 +52,12 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
     /// "NumberRange" />,
     /// </para>
     /// </summary>
-    public const string TypeNumberRange = "number-range";
+    /// <remarks>
+    /// If the value itself is desired to specify a range, use 2 separate settings instead; one for min and
+    /// one for max. Each would specify the Range of accepted values and one would be constrained by the other
+    /// (e.g. max is constrained by min).
+    /// </remarks>
+    public const string TypeNumber = "number";
 
     /// <summary>
     /// <para>
@@ -67,6 +72,25 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
     /// "DateRange" />,
     /// </para>
     /// </summary>
-    public const string TypeDateRange = "date-range";
+    /// <remarks>
+    /// If the value itself is desired to specify a range, use 2 separate settings instead; one for min and
+    /// one for max. Each would specify the Range of accepted values and one would be constrained by the other
+    /// (e.g. max is constrained by min).
+    /// </remarks>
+    public const string TypeDate = "date";
+    
+    /// <summary>
+    /// The same as <see cref="TypeNumber"/>. This was the original constant used for settings of the number type
+    /// but the range part of the type name was found to be mis-leading. These don't represent a range of numbers,
+    /// the represent a number that is constrained by a range.
+    /// </summary>
+    public const string TypeNumber_Deprecated = "number-range";
+
+    /// <summary>
+    /// The same as <see cref="TypeDate"/>. This was the original constant used for settings of the date type
+    /// but the range part of the type name was found to be mis-leading. These don't represent a range of dates,
+    /// the represent a date that is constrained by a range.
+    /// </summary>
+    public const string TypeDate_Deprecated = "date-range";
   }
 }

@@ -37,8 +37,10 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Repo
     /// <para>
     /// This property only applies to settings of the following types:
     /// <see cref="ReportSettingTypes.TypeSingleSelect" />,
-    /// <see cref="ReportSettingTypes.TypeNumberRange" />,
-    /// <see cref="ReportSettingTypes.TypeDateRange" />.
+    /// <see cref="ReportSettingTypes.TypeNumber" />,
+    /// <see cref="ReportSettingTypes.TypeNumber_Deprecated" />,
+    /// <see cref="ReportSettingTypes.TypeDate" />,
+    /// <see cref="ReportSettingTypes.TypeDate_Deprecated" />.
     /// If this setting has a different type, this property will be null.
     /// </para>
     /// </summary>
