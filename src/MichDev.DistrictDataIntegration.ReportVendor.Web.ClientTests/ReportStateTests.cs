@@ -43,9 +43,10 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
         client = new HttpClient();
         token = await this.reportConfigs.Auth.GetTokenResponse(client);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
-        this.reportNavigationClient = new ReportNavigationApi(client, this.reportConfigs);
-        this.reportStateClient = new ReportStateApi(client, this.reportConfigs);
       }
+      
+      this.reportNavigationClient = new ReportNavigationApi(client, this.reportConfigs);
+      this.reportStateClient = new ReportStateApi(client, this.reportConfigs);
     }
 
     private async Task InitializeTestSubjectReport(bool forceNewReport = false)
