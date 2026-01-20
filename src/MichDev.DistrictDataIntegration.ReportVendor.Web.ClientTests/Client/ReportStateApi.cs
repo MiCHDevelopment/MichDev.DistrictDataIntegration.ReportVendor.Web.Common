@@ -41,8 +41,15 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client
 
       string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-      ReportStateResponse? stateResponse = JsonConvert.DeserializeObject<ReportStateResponse>(responseContent);
-      return stateResponse;
+      try
+      {
+        ReportStateResponse? stateResponse = JsonConvert.DeserializeObject<ReportStateResponse>(responseContent);
+        return stateResponse;
+      }
+      catch (Exception e)
+      {
+        throw new Exception($"Got exception when parsing report state response for report: {JsonConvert.SerializeObject(requestContent, Formatting.Indented)}:\n{responseContent}", e);
+      }
     }
   }
 }

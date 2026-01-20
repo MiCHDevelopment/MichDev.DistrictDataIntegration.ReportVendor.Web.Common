@@ -69,8 +69,15 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client
 
       string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-      CategoryResponse? rootCategory = JsonConvert.DeserializeObject<CategoryResponse>(responseContent);
-      return rootCategory;
+      try
+      {
+        CategoryResponse? rootCategory = JsonConvert.DeserializeObject<CategoryResponse>(responseContent);
+        return rootCategory;
+      }
+      catch (Exception e)
+      {
+        throw new Exception($"Got exception when parsing report navigation response:\n{responseContent}", e);
+      }
     }
 
     public async Task<IEnumerable<string>> GetPathToRandomReport()
