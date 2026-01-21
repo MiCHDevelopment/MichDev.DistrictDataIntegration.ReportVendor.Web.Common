@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Bogus;
+using Bogus.Extensions;
 using MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client;
 using MichDev.DistrictDataIntegration.ReportVendor.Web.Common;
 using MichDev.DistrictDataIntegration.ReportVendor.Web.Common.Contracts.Auth;
@@ -23,6 +24,12 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
   public class ReportStateTests
   {
     private Faker faker = new Faker();
+    private ITestOutputHelper output;
+
+    public ReportStateTests(ITestOutputHelper output)
+    {
+      this.output = output;
+    }
 
     private static HttpClient client = default!;
     private static TokenResponse? token = null;
@@ -89,7 +96,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     }
 
     /// <summary>
-    /// Ensure that root category makes sense (has an internal id and some sub categories).
+    /// Ensure that parameters make sense (has an internal id and a label).
     /// </summary>
     /// <returns></returns>
     [Fact]
@@ -131,36 +138,39 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     }
 
     /// <summary>
-    /// Ensure that root category makes sense (has an internal id and some sub categories).
+    /// Ensure that I can select a parameter value and have it honored by the report vendor.
     /// </summary>
     /// <returns></returns>
-    [Fact]
-    public async Task Test_ItHonorsMyParameter_WhenISetAParameter()
+    [Theory]
+    [InlineData(ReportSettingTypes.TypeSingleSelect)]
+    [InlineData(ReportSettingTypes.TypeMultiSelect)]
+    [InlineData(ReportSettingTypes.TypeNumber)]
+    [InlineData(ReportSettingTypes.TypeDate)]
+    public async Task Test_ItHonorsMyParameter_WhenISetAParameter(string forSettingType)
     {
       await InitializeClient();
       await InitializeWithAReportWithParameters();
 
       ReportStateResponse? stateResponse = subjectReportInitialStateResponse;
 
-      ReportSettingResponse settingToSet = stateResponse!.Parameters.Settings.First();
-      ReportSettingOptionResponse optionToChoose = faker.PickRandom(settingToSet.Options!.Skip(1));
+      ReportSettingResponse? settingToSet = stateResponse!.Parameters.Settings.FirstOrDefault(s => s.Type == forSettingType);
+      if (settingToSet == null)
+      {
+        this.output.WriteLine($"No setting of type {forSettingType} in report {JsonConvert.SerializeObject(subjectReportInitialStateRequest.PathToReport)}. Skipping test because it's not applicable for this report.");
+        return;
+      }
+
+      ReportSettingStateRequest settingRequest = GetRandomRequestForSetting(settingToSet);
 
       ReportStateRequest stateRequest = new ReportStateRequest()
       {
         PathToReport = subjectReportPathToReport,
         Parameters = new ReportStateParameterSetRequest()
         {
-          Settings = [
-            new ReportSettingStateRequest()
-            {
-              ParameterId = settingToSet.ParameterId,
-              SelectedValue = optionToChoose.Value,
-              Type = settingToSet.Type
-            }
-          ]
+          Settings = [settingRequest]
         }
       };
-      
+
       ReportStateResponse? stateWithParamSet = await this.reportStateClient.GetState(stateRequest);
 
       AssertForRequest(
@@ -180,11 +190,115 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
           () => Assert.NotNull(settingResponse.Label));
       }
 
-      ReportSettingResponse settingThatWasReset = stateWithParamSet!.Parameters.Settings.Single(param => param.ParameterId == settingToSet.ParameterId);
-      AssertForSetting(
-        stateRequest,
-        settingThatWasReset,
-        () => Assert.Equal(optionToChoose.Value, settingThatWasReset.SelectedValue));
+      if (settingRequest.SelectedValue != null)
+      {
+        // Test in case of single select or other scalar value.
+        ReportSettingResponse settingThatWasReset = stateWithParamSet!.Parameters.Settings.Single(param => param.ParameterId == settingToSet.ParameterId);
+        AssertForSetting(
+          stateRequest,
+          settingThatWasReset,
+          () => Assert.Equal(settingRequest.SelectedValue, settingThatWasReset.SelectedValue));
+      }
+      else
+      {
+        // Test in case of multi select
+        ReportSettingResponse settingThatWasReset = stateWithParamSet!.Parameters.Settings.Single(param => param.ParameterId == settingToSet.ParameterId);
+        AssertForSetting(
+          stateRequest,
+          settingThatWasReset,
+          () =>
+          {
+            foreach (string expected in settingRequest.SelectedValues!)
+            {
+              Assert.Contains(expected, settingThatWasReset.SelectedValues ?? []);
+            }
+          });
+      }
+    }
+
+    /// <summary>
+    /// Looks through the options or possible values in the setting and picks one or more (in case of multi-select)
+    /// and constructs and returns a request object for that selection.
+    /// </summary>
+    /// <param name="settingToSet"></param>
+    /// <returns></returns>
+    private ReportSettingStateRequest GetRandomRequestForSetting(ReportSettingResponse settingToSet)
+    {
+      ReportSettingStateRequest settingRequest = new ReportSettingStateRequest()
+      {
+        ParameterId = settingToSet.ParameterId,
+        Type = settingToSet.Type
+      };
+
+      string forSettingType = settingToSet.Type;
+
+      if (forSettingType == ReportSettingTypes.TypeMultiSelect)
+      {
+        if (!(settingToSet.Options?.Any() ?? false))
+        {
+          this.output.WriteLine($"No options for parameter {settingToSet.Label} in report {JsonConvert.SerializeObject(subjectReportInitialStateRequest.PathToReport)}. Did you mean for there to be options?");
+        }
+        bool hasMultipleOptions = settingToSet.Options?.Count() > 1;
+        IEnumerable<ReportSettingOptionResponse> optionsToChoose = faker.PickRandom(
+          settingToSet.Options,
+          hasMultipleOptions ? 2 : 1);
+        settingRequest.SelectedValues = optionsToChoose.Select(o => o.Value).ToList();
+      }
+      else if (forSettingType == ReportSettingTypes.TypeSingleSelect)
+      {
+        if (!(settingToSet.Options?.Any() ?? false))
+        {
+          this.output.WriteLine($"No options for parameter {settingToSet.Label} in report {JsonConvert.SerializeObject(subjectReportInitialStateRequest.PathToReport)}. Did you mean for there to be options?");
+        }
+        ReportSettingOptionResponse optionToChoose = faker.PickRandom(settingToSet.Options);
+        settingRequest.SelectedValue = optionToChoose.Value;
+      }
+      else if (forSettingType == ReportSettingTypes.TypeNumber)
+      {
+        if (settingToSet.NumberRange == null)
+        {
+          settingRequest.SelectedValue = faker.Random.Int(0, 10).ToString();
+        }
+        else if (settingToSet.NumberRange.Min.HasValue)
+        {
+          if (settingToSet.NumberRange.Step.HasValue)
+          {
+            settingRequest.SelectedValue = (settingToSet.NumberRange.Min + settingToSet.NumberRange.Step).ToString();
+          }
+          else
+          {
+            settingRequest.SelectedValue = (settingToSet.NumberRange.Min + 1).ToString();
+          }
+        }
+        else // if (settingToSet.NumberRange.Max.HasValue)
+        {
+          if (settingToSet.NumberRange.Step.HasValue)
+          {
+            settingRequest.SelectedValue = (settingToSet.NumberRange.Max - settingToSet.NumberRange.Step).ToString();
+          }
+          else
+          {
+            settingRequest.SelectedValue = (settingToSet.NumberRange.Max - 1).ToString();
+          }
+        }
+      }
+      else if (forSettingType == ReportSettingTypes.TypeDate)
+      {
+        if (settingToSet.DateRange == null)
+        {
+          settingRequest.SelectedValue = faker.Date.Recent(30).ToString("o");
+        }
+        else if (settingToSet.DateRange.Min.HasValue)
+        {
+          settingRequest.SelectedValue = (settingToSet.DateRange.Min.Value + TimeSpan.FromDays(1)).ToString("o");
+        }
+        else // if (settingToSet.DateRange.Max.HasValue)
+        {
+          settingRequest.SelectedValue = (settingToSet.DateRange.Max!.Value - TimeSpan.FromDays(1)).ToString("o");
+        }
+      }
+
+      return settingRequest;
     }
 
     private void AssertForRequest(
@@ -204,7 +318,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
 
     private void AssertForSetting(
       ReportStateRequest request,
-      ReportSettingResponse setting,
+      ReportSettingResponse settingResponse,
       Action assertion)
     {
       try
@@ -214,8 +328,8 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       catch (Exception e)
       {
         string requestJson = JsonConvert.SerializeObject(request, Formatting.Indented);
-        string settingJson = JsonConvert.SerializeObject(setting, Formatting.Indented);
-        throw new XunitException($"Assertion against the '{setting.ParameterId}' setting failed.\nReport state request JSON:\n{requestJson}\nSetting JSON:\n{settingJson}", e);
+        string settingResponseJson = JsonConvert.SerializeObject(settingResponse, Formatting.Indented);
+        throw new XunitException($"Assertion against the '{settingResponse.ParameterId}' setting failed.\nReport state request JSON:\n{requestJson}\nSetting response JSON:\n{settingResponseJson}", e);
       }
     }
   }

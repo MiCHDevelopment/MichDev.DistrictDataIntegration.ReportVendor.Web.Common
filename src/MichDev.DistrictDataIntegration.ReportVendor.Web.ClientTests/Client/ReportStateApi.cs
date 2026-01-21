@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Bogus;
@@ -32,17 +33,28 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client
 
     public async Task<ReportStateResponse?> GetState(ReportStateRequest requestContent)
     {
+      string contentBody = JsonConvert.SerializeObject(requestContent);
       HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, this.ReportStateUrl)
       {
-        Content = JsonContent.Create(requestContent)
+        Content = new StringContent(
+          contentBody,
+          Encoding.UTF8,
+          "application/json")
       };
 
       HttpResponseMessage response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
       string responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-      ReportStateResponse? stateResponse = JsonConvert.DeserializeObject<ReportStateResponse>(responseContent);
-      return stateResponse;
+      try
+      {
+        ReportStateResponse? stateResponse = JsonConvert.DeserializeObject<ReportStateResponse>(responseContent);
+        return stateResponse;
+      }
+      catch (Exception e)
+      {
+        throw new Exception($"Got exception when parsing report state response for report: {contentBody}:\n{responseContent}", e);
+      }
     }
   }
 }

@@ -44,9 +44,17 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests.Client
       };
 
       HttpResponseMessage response = await client.SendAsync(request);
-      string content = await response.Content.ReadAsStringAsync();
-      TokenResponse? tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(content);
-      return tokenResponse;
+      string responseContent = await response.Content.ReadAsStringAsync();
+      
+      try
+      {
+        TokenResponse? tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(responseContent);
+        return tokenResponse;
+      }
+      catch (Exception e)
+      {
+        throw new Exception($"Got exception when parsing auth token response:\n{responseContent}", e);
+      }
     }
   }
 }
