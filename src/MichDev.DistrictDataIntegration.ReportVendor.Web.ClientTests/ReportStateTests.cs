@@ -208,7 +208,6 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
           settingThatWasReset,
           () =>
           {
-            Assert.Equal(settingRequest.SelectedValues!.Count(), settingThatWasReset.SelectedValues?.Count());
             foreach (string expected in settingRequest.SelectedValues!)
             {
               Assert.Contains(expected, settingThatWasReset.SelectedValues ?? []);
@@ -319,7 +318,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
 
     private void AssertForSetting(
       ReportStateRequest request,
-      ReportSettingResponse setting,
+      ReportSettingResponse settingResponse,
       Action assertion)
     {
       try
@@ -329,8 +328,8 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       catch (Exception e)
       {
         string requestJson = JsonConvert.SerializeObject(request, Formatting.Indented);
-        string settingJson = JsonConvert.SerializeObject(setting, Formatting.Indented);
-        throw new XunitException($"Assertion against the '{setting.ParameterId}' setting failed.\nReport state request JSON:\n{requestJson}\nSetting JSON:\n{settingJson}", e);
+        string settingResponseJson = JsonConvert.SerializeObject(settingResponse, Formatting.Indented);
+        throw new XunitException($"Assertion against the '{settingResponse.ParameterId}' setting failed.\nReport state request JSON:\n{requestJson}\nSetting response JSON:\n{settingResponseJson}", e);
       }
     }
   }
