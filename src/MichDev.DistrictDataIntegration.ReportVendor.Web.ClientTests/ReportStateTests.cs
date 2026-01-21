@@ -96,7 +96,7 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     }
 
     /// <summary>
-    /// Ensure that parameters make sense (has an internal id and a labl).
+    /// Ensure that parameters make sense (has an internal id and a label).
     /// </summary>
     /// <returns></returns>
     [Fact]
@@ -286,15 +286,15 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
       {
         if (settingToSet.DateRange == null)
         {
-          settingRequest.SelectedValue = faker.Random.Int(0, 10).ToString();
+          settingRequest.SelectedValue = faker.Date.Recent(30).ToString("o");
         }
         else if (settingToSet.DateRange.Min.HasValue)
         {
-          settingRequest.SelectedValue = (settingToSet.DateRange.Min + TimeSpan.FromDays(1)).ToString();
+          settingRequest.SelectedValue = (settingToSet.DateRange.Min.Value + TimeSpan.FromDays(1)).ToString("o");
         }
         else // if (settingToSet.DateRange.Max.HasValue)
         {
-          settingRequest.SelectedValue = (settingToSet.DateRange.Max - TimeSpan.FromDays(1)).ToString();
+          settingRequest.SelectedValue = (settingToSet.DateRange.Max!.Value - TimeSpan.FromDays(1)).ToString("o");
         }
       }
 
