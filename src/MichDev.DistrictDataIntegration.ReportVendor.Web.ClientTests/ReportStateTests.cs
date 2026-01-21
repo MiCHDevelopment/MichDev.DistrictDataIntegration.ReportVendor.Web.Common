@@ -138,6 +138,30 @@ namespace MichDev.DistrictDataIntegration.ReportVendor.Web.ClientTests
     }
 
     /// <summary>
+    /// Ensure that visualization and thumbnail url is returned in the response.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task Test_TheVisualizationAndThumbnailUrlsAreIncluded()
+    {
+      await InitializeClient();
+      await InitializeTestSubjectReport();
+
+      ReportStateRequest? stateRequest = subjectReportInitialStateRequest;
+      ReportStateResponse? stateResponse = subjectReportInitialStateResponse;
+
+      Assert.NotNull(stateResponse);
+      
+      AssertForRequest(
+        stateRequest,
+        () => Assert.NotEmpty(stateResponse.Visualization?.Url ?? string.Empty));
+      
+      AssertForRequest(
+        stateRequest,
+        () => Assert.NotEmpty(stateResponse.Visualization?.ThumbnailUrl ?? string.Empty));
+    }
+
+    /// <summary>
     /// Ensure that I can select a parameter value and have it honored by the report vendor.
     /// </summary>
     /// <returns></returns>
